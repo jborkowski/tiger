@@ -1,6 +1,7 @@
 #include "prog1.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 int maxargs_exp(A_exp exp);
 int maxargs(A_stm stm);
@@ -115,47 +116,62 @@ Table_ interpStm(A_stm stm, Table_ t) {
   }
   case A_printStm:
     it.t = t;
-    it.i = -1;
+    printf("Print statement output: ");
     interpExpList(stm->u.print.exps, it);
+    printf("\n");
   }
   return t;
 }
 
+int lookup(string key, Table_ t) {
+  Table_ current = t;
+  while (current != NULL) {
+    if (current->id && strcmp(current->id, key) == 0) {
+      return current->value;
+    }
+    current = current->tail;
+  }
+  printf("Undefined variable: %s\n", key);
+  return 0;
+}
+
 struct IntAndTable interpExp(A_exp exp, Table_ t) {
-  struct IntAndTable r;
+  struct IntAndTable it;
   switch (exp->kind) {
   case A_idExp: {
-    r.t = Table(exp->u.id, -1, t);
+    it.t = t;
+    it.i = lookup(exp->u.id, t);
     break;
   }
   case A_numExp: {
-    r.i = exp->u.num;
+    it.i = exp->u.num;
+    it.t = t;
     break;
   }
   case A_opExp: {
-    struct IntAndTable left = interpExp(exp->u.op.left, t);
-    struct IntAndTable right = interpExp(exp->u.op.right, left.t);
+    struct IntAndTable right = interpExp(exp->u.op.right, t);
+    struct IntAndTable left = interpExp(exp->u.op.left, right.t);
 
     switch (exp->u.op.oper) {
     case A_plus: {
-      r.i = left.i + right.i;
+      it.i = left.i + right.i;
       break;
     }
     case A_minus: {
-      r.i = left.i + right.i;
+      it.i = left.i + right.i;
       break;
     }
     case A_times: {
-      r.i = left.i * right.i;
+      it.i = left.i * right.i;
       break;
     }
     case A_div: {
-      r.i = left.i / right.i;
+      it.i = left.i / right.i;
       break;
     }
     }
 
-    r.t = right.t;
+    it.t = left.t;
     break;
   }
   case A_eseqExp: {
@@ -163,17 +179,21 @@ struct IntAndTable interpExp(A_exp exp, Table_ t) {
     return interpExp(exp->u.eseq.exp, stm_t);
   }
   }
-  return r;
+  return it;
 }
 
 struct IntAndTable interpExpList(A_expList expList, struct IntAndTable it) {
   switch (expList->kind) {
   case A_pairExpList: {
     struct IntAndTable head = interpExp(expList->u.pair.head, it.t);
+    printf("%d", head.i);
     return interpExpList(expList->u.pair.tail, head);
   }
-  case A_lastExpList:
-    return interpExp(expList->u.last, it.t);
+  case A_lastExpList: {
+    struct IntAndTable last = interpExp(expList->u.last, it.t);
+    printf("%d", last.i);
+    return last;
+  }
   }
   return it;
 }
