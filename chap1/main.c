@@ -201,11 +201,14 @@ struct IntAndTable interpExpList(A_expList expList, struct IntAndTable it) {
 
 int main() {
 
-  T_tree t = insert("A", insert("B", insert("C", NULL)));
+  A_stm p = prog();
+
+  T_tree t = insert("A", &p, insert("B", &p, insert("C", &p, NULL)));
+
+  void *b = lookup_t("B", t);
 
   bool exists = member("D", t);
   printf("Result: %b\n", exists);
-  A_stm p = prog();
 
   int max = maxargs(p);
 
