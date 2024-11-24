@@ -1,3 +1,4 @@
+#include "exercises.h"
 #include "prog1.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -199,6 +200,11 @@ struct IntAndTable interpExpList(A_expList expList, struct IntAndTable it) {
 }
 
 int main() {
+
+  T_tree t = insert("A", insert("B", insert("C", NULL)));
+
+  bool exists = member("D", t);
+  printf("Result: %b\n", exists);
   A_stm p = prog();
 
   int max = maxargs(p);
